@@ -1,0 +1,27 @@
+name: "bluebell_sly"
+mode: "dev"
+port: "8081"
+
+log:
+  level: "debug"
+  filename: "./log/bluebell.log"
+  max_size: 1000
+  max_age: 3600
+  max_backups: 5
+
+postgresql:
+  host: 192.168.0.58
+  port: 35432
+  user: postgres
+  password: 111111
+  db: test_sly
+  max_open_conns: 100
+  max_idle_conns: 20
+
+
+redis:
+  host: 192.168.0.58
+  port: 36379
+  password: 111111
+  poolSize : 100
+  min_idle_conns : 10
