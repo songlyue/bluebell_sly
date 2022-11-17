@@ -4,6 +4,8 @@ import (
 	"bluebell_sly/dao/postgres"
 	"bluebell_sly/dao/redis"
 	"bluebell_sly/logger"
+	"bluebell_sly/pkg/snowflake"
+	"bluebell_sly/routers"
 	"bluebell_sly/settings"
 	"fmt"
 )
@@ -22,5 +24,18 @@ func main() {
 		fmt.Println("redis connect failed, err:", err)
 	}
 	defer redis.Close()
+
+	//  分布式Id 注册
+	if err := snowflake.Init(1); err != nil {
+		_ = fmt.Sprintf("Init snowFlake failed,err: %v\n", err)
+	}
+
+	// 路由注册
+	router := routers.SetupRouter()
+	err = router.Run(fmt.Sprintf(":%d", settings.Conf.Port))
+	if err != nil {
+		fmt.Printf("run server failed, err:%v\n", err)
+		return
+	}
 
 }

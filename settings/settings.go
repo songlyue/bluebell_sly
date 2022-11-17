@@ -10,7 +10,7 @@ import (
 type AppConfig struct {
 	Name              string `mapstructure:"name"`
 	Mode              string `mapstructure:"mode"`
-	Port              string `mapstructure:"port"`
+	Port              int    `mapstructure:"port"`
 	*LogConfig        `mapstructure:"log"`
 	*PostgresqlConfig `mapstructure:"postgresql"`
 	*RedisConfig      `mapstructure:"redis"`
