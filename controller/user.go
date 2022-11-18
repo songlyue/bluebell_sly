@@ -3,7 +3,11 @@ package controller
 import (
 	"bluebell_sly/dao/postgres"
 	"bluebell_sly/models"
+	"bluebell_sly/pkg/jwt"
 	"errors"
+	"fmt"
+	"net/http"
+	"strings"
 
 	"go.uber.org/zap"
 
@@ -22,7 +26,14 @@ func LoginHandler(c *gin.Context) {
 		ResponseError(c, CodeInvalidPassword)
 		return
 	}
-	ResponseSuccess(c, nil)
+	atoken, rToken, _ := jwt.GenToken(u.UserID)
+
+	ResponseSuccess(c, gin.H{
+		"accessToken":  atoken,
+		"refreshToken": rToken,
+		"userID":       u.UserID,
+		"username":     u.UserName,
+	})
 
 }
 
@@ -46,4 +57,27 @@ func SignUpHandler(c *gin.Context) {
 		return
 	}
 	ResponseSuccess(c, nil)
+}
+
+func RefreshTokenHandler(c *gin.Context) {
+	rt := c.Query("refresh_token")
+	authHeader := c.Request.Header.Get("Authorization")
+	if authHeader == "" {
+		ResponseErrorWithMsg(c, CodeInvalidToken, "请求头缺少Auth Token")
+		c.Abort()
+		return
+	}
+	parts := strings.SplitN(authHeader, " ", 2)
+	if !(len(parts) == 2 && parts[0] == "Bearer") {
+		ResponseErrorWithMsg(c, CodeInvalidToken, "Token格式错误")
+		c.Abort()
+		return
+	}
+	atoken, rToken, err := jwt.RefreshToken(parts[1], rt)
+	fmt.Println(err)
+	c.JSON(http.StatusOK, gin.H{
+		"access_token":  atoken,
+		"refresh_token": rToken,
+	})
+
 }
