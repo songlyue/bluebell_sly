@@ -2,7 +2,6 @@ package logger
 
 import (
 	"bluebell_sly/settings"
-	"fmt"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -12,38 +11,36 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
-
 	"go.uber.org/zap/zapcore"
 )
 
 var lg *zap.Logger
 
-func Init(cfg *settings.LogConfig, mode string) {
+// Init 初始化lg
+func Init(cfg *settings.LogConfig, mode string) (err error) {
 	writeSyncer := getLogWriter(cfg.Filename, cfg.MaxSize, cfg.MaxBackups, cfg.MaxAge)
 	encoder := getEncoder()
 	var l = new(zapcore.Level)
-	err := l.UnmarshalText([]byte(cfg.Level))
+	err = l.UnmarshalText([]byte(cfg.Level))
 	if err != nil {
-		fmt.Println("日志初始化失败err：", err)
 		return
 	}
 	var core zapcore.Core
 	if mode == "dev" {
 		// 进入开发模式，日志输出到终端
 		consoleEncoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
-		zapcore.NewTee(
+		core = zapcore.NewTee(
 			zapcore.NewCore(encoder, writeSyncer, l),
 			zapcore.NewCore(consoleEncoder, zapcore.Lock(os.Stdout), zapcore.DebugLevel),
 		)
-
 	} else {
 		core = zapcore.NewCore(encoder, writeSyncer, l)
 	}
-	logger := zap.New(core, zap.AddCaller())
-	zap.ReplaceGlobals(logger)
+
+	lg = zap.New(core, zap.AddCaller())
+	zap.ReplaceGlobals(lg)
 	zap.L().Info("init logger success")
 	return
 }
@@ -58,15 +55,14 @@ func getEncoder() zapcore.Encoder {
 	return zapcore.NewJSONEncoder(encoderConfig)
 }
 
-func getLogWriter(fileName string, maxSize, maxBackup, maxAge int) zapcore.WriteSyncer {
+func getLogWriter(filename string, maxSize, maxBackup, maxAge int) zapcore.WriteSyncer {
 	lumberJackLogger := &lumberjack.Logger{
-		Filename:   fileName,
+		Filename:   filename,
 		MaxSize:    maxSize,
 		MaxBackups: maxBackup,
 		MaxAge:     maxAge,
 	}
 	return zapcore.AddSync(lumberJackLogger)
-
 }
 
 // GinLogger 接收gin框架默认的日志

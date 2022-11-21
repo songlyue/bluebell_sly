@@ -9,8 +9,8 @@ import (
 func SetupRouter() *gin.Engine {
 	//gin.SetMode(gin.ReleaseMode)
 	//r := gin.New()
-	//r.Use(logger.GinLogger(), logger.GinRecovery(true))
 	r := gin.Default()
+	//r.Use(logger.GinLogger(), logger.GinRecovery(true))
 	v1 := r.Group("/api/v1")
 	v1.POST("/login", controller.LoginHandler)
 	v1.POST("/signup", controller.SignUpHandler)
@@ -19,6 +19,12 @@ func SetupRouter() *gin.Engine {
 	{
 		v1.GET("/community", controller.CommunityHandler)
 		v1.GET("community/:id", controller.CommunityDetailHandler)
+		// 创建帖子
+		v1.POST("/post/add", controller.CreatePostHandler)
+		v1.GET("/post/:id", controller.PostDetailHandler)
+		v1.GET("/post/list", controller.PostListHandler)
+
+		v1.GET("/post/pgList", controller.PostPgListHandler)
 	}
 	return r
 }

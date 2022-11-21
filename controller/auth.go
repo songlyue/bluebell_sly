@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bluebell_sly/pkg/jwt"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -10,6 +11,10 @@ import (
 
 const (
 	ContextUserIDKey = "userID"
+)
+
+var (
+	ErrorUserNotLogin = errors.New("当前用户未登录")
 )
 
 func JWTAuthMiddleware() func(c *gin.Context) {

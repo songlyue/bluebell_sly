@@ -57,3 +57,9 @@ func Login(user *models.User) (err error) {
 	}
 	return
 }
+func GetUserById(id string) (user *models.User, err error) {
+	user = new(models.User)
+	sqlStr := `select user_id , username from users where user_id = $1`
+	err = db.Get(user, sqlStr, id)
+	return
+}
